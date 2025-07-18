@@ -1,0 +1,49 @@
+#include <PID_v1.h>
+
+// Pin setup
+const int ldrPin = A0;
+const int led1 = 3;
+const int led2 = 5;
+const int emergencyPin = 6; // Emergency push button pin
+
+// PID variables
+double Setpoint, Input, Output;
+double Kp = 2.0, Ki = 5.0, Kd = 1.0;
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(emergencyPin, INPUT_PULLUP); // Button connected to GND
+
+  Setpoint = 400; // Desired light level (darker = higher value)
+
+  myPID.SetMode(AUTOMATIC);
+  myPID.SetOutputLimits(0, 255); // LED brightness range
+}
+
+void loop() {
+  bool emergencyActive = digitalRead(emergencyPin) == LOW; // Button pressed = emergency
+
+  if (emergencyActive) {
+    // Turn off lights immediately
+    analogWrite(led1, 0);
+    analogWrite(led2, 0);
+    Serial.println("🚨 EMERGENCY: Lights OFF");
+  } else {
+    // Run normal PID lighting control
+    Input = analogRead(ldrPin);
+    myPID.Compute();
+
+    analogWrite(led1, (int)Output);
+    analogWrite(led2, (int)Output);
+
+    Serial.print("LDR: ");
+    Serial.print(Input);
+    Serial.print(" | PWM: ");
+    Serial.println(Output);
+  }
+
+  delay(100);
+}
