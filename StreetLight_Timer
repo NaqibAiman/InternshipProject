@@ -1,0 +1,48 @@
+const int ldrPin = A0;
+const int ledPin = 3;
+const int emergencyPin = 6;
+
+int ldrThreshold = 400; // Dark if below this
+int timeInSeconds = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+  pinMode(emergencyPin, INPUT_PULLUP); // active LOW
+}
+
+void loop() {
+  bool emergency = digitalRead(emergencyPin) == LOW;
+  int ldrValue = analogRead(ldrPin);
+
+  Serial.print("Time: ");
+  Serial.print(timeInSeconds);
+  Serial.print("s | LDR: ");
+  Serial.print(ldrValue);
+
+  if (emergency) {
+    digitalWrite(ledPin, LOW);
+    Serial.println(" | 🚨 EMERGENCY: LED OFF");
+  }
+  else if (timeInSeconds > 20) {
+    digitalWrite(ledPin, LOW);
+    Serial.println(" | ⏰ Time > 20s → LED OFF (Timer cutoff)");
+  }
+  else if (ldrValue < ldrThreshold) {
+    digitalWrite(ledPin, HIGH);
+    Serial.println(" | 🌙 Dark → LED ON");
+  }
+  else {
+    digitalWrite(ledPin, LOW);
+    Serial.println(" | ☀️ Bright → LED OFF");
+  }
+
+  delay(1000);  // simulate 1 second
+  timeInSeconds++;
+
+  // ⏱️ Reset the cycle after 30 seconds
+  if (timeInSeconds >= 30) {
+    Serial.println("🔄 Timer reset to 0");
+    timeInSeconds = 0;
+  }
+}
