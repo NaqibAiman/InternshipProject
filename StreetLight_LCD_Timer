@@ -1,0 +1,71 @@
+#include <LiquidCrystal.h>
+
+// LCD: RS, E, D4, D5, D6, D7
+LiquidCrystal lcd(10, 9, 8, 7, 5, 4);
+
+// Pin setup
+const int ldrPin = A0;
+const int ledPin = 3;
+const int emergencyPin = 6;
+
+int ldrThreshold = 400;  // Adjust this based on environment
+int timeInSeconds = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+  pinMode(emergencyPin, INPUT_PULLUP); // Active LOW
+
+  lcd.begin(16, 2);
+  lcd.print("System Starting...");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop() {
+  int ldrValue = analogRead(ldrPin);
+  bool emergency = digitalRead(emergencyPin) == LOW;
+
+  lcd.setCursor(0, 0);
+  lcd.print("T:");
+  lcd.print(timeInSeconds);
+  lcd.print("s LDR:");
+  lcd.print(ldrValue);
+
+  lcd.setCursor(0, 1); // 2nd row
+
+  if (emergency) {
+    digitalWrite(ledPin, LOW);
+    lcd.print("EMERGENCY: LED OFF ");
+    Serial.println("🚨 EMERGENCY: LED OFF");
+  } 
+  else if (timeInSeconds > 20) {
+    digitalWrite(ledPin, LOW);
+    lcd.print("Time>20s: LED OFF ");
+    Serial.println("⏰ Time > 20s → LED OFF");
+  } 
+  else if (ldrValue < ldrThreshold) {
+    digitalWrite(ledPin, HIGH);
+    lcd.print("Dark: LED ON       ");
+    Serial.println("🌙 Dark → LED ON");
+  } 
+  else {
+    digitalWrite(ledPin, LOW);
+    lcd.print("Bright: LED OFF    ");
+    Serial.println("☀️ Bright → LED OFF");
+  }
+
+  delay(1000); // 1-second timer
+  timeInSeconds++;
+
+  // Reset after 30 seconds
+  if (timeInSeconds >= 30) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("🔄 Resetting Timer");
+    Serial.println("🔄 Timer reset to 0");
+    delay(1000);
+    lcd.clear();
+    timeInSeconds = 0;
+  }
+}
