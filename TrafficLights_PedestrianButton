@@ -1,0 +1,51 @@
+const int redPin = 2;
+const int yellowPin = 3;
+const int greenPin = 4;
+const int pedGreenPin = 5;
+const int buttonPin = 6;
+
+bool buttonPressed = false;
+
+void setup() {
+  pinMode(redPin, OUTPUT);
+  pinMode(yellowPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(pedGreenPin, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP); // Button connected to GND
+}
+
+void loop() {
+  // Green Light (Car Go)
+  digitalWrite(greenPin, HIGH);
+  digitalWrite(yellowPin, LOW);
+  digitalWrite(redPin, LOW);
+  digitalWrite(pedGreenPin, LOW);
+  waitWithButtonCheck(5000); // Car green time
+
+  // Yellow Light (Prepare to stop)
+  digitalWrite(greenPin, LOW);
+  digitalWrite(yellowPin, HIGH);
+  waitWithButtonCheck(2000);
+
+  // Red Light (Cars stop)
+  digitalWrite(yellowPin, LOW);
+  digitalWrite(redPin, HIGH);
+
+  if (buttonPressed) {
+    digitalWrite(pedGreenPin, HIGH);  // Pedestrian cross
+    delay(5000);                       // Time for crossing
+    digitalWrite(pedGreenPin, LOW);
+    buttonPressed = false;            // Reset flag
+  }
+
+  delay(2000); // Ensure red light stays a bit before next cycle
+}
+
+void waitWithButtonCheck(unsigned long duration) {
+  unsigned long start = millis();
+  while (millis() - start < duration) {
+    if (digitalRead(buttonPin) == LOW) {
+      buttonPressed = true;  // Button pressed during cycle
+    }
+  }
+}
