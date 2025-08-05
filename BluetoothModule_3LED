@@ -1,0 +1,59 @@
+// LED pin definitions
+const int led1 = 2;
+const int led2 = 3;
+const int led3 = 4;
+
+void setup() {
+  Serial.begin(9600);  // Bluetooth uses this via HC-05
+
+  // Set LED pins as outputs
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+
+  // Make sure all LEDs start OFF
+  digitalWrite(led1, LOW);
+  digitalWrite(led2, LOW);
+  digitalWrite(led3, LOW);
+
+  Serial.println("Bluetooth LED Control Ready");
+}
+
+void loop() {
+  if (Serial.available()) {
+    // Read string from Bluetooth terminal
+    String command = Serial.readStringUntil('\n');
+    command.trim();  // Removes newline, spaces, etc.
+
+    Serial.println("Received: " + command);  // Debugging
+
+    // LED 1 Control
+    if (command == "LED1ON") {
+      digitalWrite(led1, HIGH);
+    } 
+    else if (command == "LED1OFF") {
+      digitalWrite(led1, LOW);
+    }
+
+    // LED 2 Control
+    else if (command == "LED2ON") {
+      digitalWrite(led2, HIGH);
+    } 
+    else if (command == "LED2OFF") {
+      digitalWrite(led2, LOW);
+    }
+
+    // LED 3 Control
+    else if (command == "LED3ON") {
+      digitalWrite(led3, HIGH);
+    } 
+    else if (command == "LED3OFF") {
+      digitalWrite(led3, LOW);
+    }
+
+    // Unknown command
+    else {
+      Serial.println("Unknown command");
+    }
+  }
+}
